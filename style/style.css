@@ -1,0 +1,79 @@
+#box {
+    width: 600px;
+    height: 500px;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.container h1 {
+    text-align: center;
+    color: #888888;
+    font-family: Calibri;
+    font-size: xxx-large;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.row {
+    width: 600px;
+}
+
+.col-md-8 .form-control {
+    background: none;
+    border: none;
+    border-bottom: 2px solid white;
+}
+
+.col-md-8 input[type=text] {
+    color: white;
+}
+
+.col-md-8 .form-control:hover,
+.col-md-8 .form-control:active,
+.col-md-8 .form-control:focus {
+    background: none;
+    box-shadow: none;
+}
+
+ul li span {
+    color: white;
+    font-size: 20px;
+    text-align: start;
+}
+
+.cont, .setUsername {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.active:hover {
+    cursor: pointer;
+}

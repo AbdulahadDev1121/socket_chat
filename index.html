@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Socket chat application</title>
+    <link rel="stylesheet" href="style/style.css">
+    <!-- Font Awesome -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+            rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.css"
+            rel="stylesheet"
+    />
+</head>
+<body style="background: #282E33;">
+<div id="app">
+    <div class="container">
+        <div class="row setUsername" v-if="state == 0">
+            <div class="col-md-12">
+                <div class="card shadow bg-dark">
+                    <div class="card-body">
+                        <form @submit.prevent="setUsername">
+                            <h4 class="text-center card-title">Enter username ! <a @click="continueWithoutUsername"
+                                                                                   class="active">Join as a Guaest</a>
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <input type="text" placeholder="Username..." class="form-control rounded-0"
+                                           v-model:value="username">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary" style="background-color: #4c75a3;">
+                                        Join
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cont" v-if="state == 1">
+            <h1 class="text-center">
+                Socket chat
+            </h1>
+            <ul id="box">
+                <li v-for="message in messages">
+                    <span>
+                        <b> {{ message.user }} : </b> {{ message.message }}
+                    </span>
+                </li>
+            </ul>
+            <form @submit.prevent="sendMessage">
+                <div class="row">
+                    <div class="col-md-8">
+                        <input class="form-control rounded-0" id="focus" type="text" placeholder="Message..."
+                               v-model:value="message">
+                    </div>
+                    <div class="col-md-4">
+                        <input class="btn btn-primery btn-block" style="background-color: #4c75a3;" type="submit"
+                               value="Send">
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<!-- MDB -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.js"
+></script>
+<script>
+    var socket = null;
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: '',
+            messages: [],
+            username: '',
+            state: 0
+        },
+        methods: {
+            sendMessage: function () {
+                if(this.message.length > 0) {
+                    socket.emit('message', this.message);
+                    this.message = '';
+                    document.getElementById('focus').focus()
+                }
+            },
+            setUsername: function () {
+                socket.emit('join', this.username);
+                this.username = '';
+                this.state = 1;
+            },
+            continueWithoutUsername: function () {
+                socket.emit('join', null);
+                this.state = 1;
+            }
+        },
+        created: function () {
+            socket = io();
+        },
+        mounted: function () {
+            socket.on('message', function (message) {
+                let voice = new SpeechSynthesisUtterance(message.message)
+                speechSynthesis.speak(voice)
+                app.messages.push(message)
+            })
+        }
+    })
+</script>
+</body>
+</html>
