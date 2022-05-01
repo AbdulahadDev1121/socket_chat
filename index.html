@@ -1,45 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Socket chat application</title>
-    <link rel="stylesheet" href="style/style.css">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Font Awesome -->
-    <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-            rel="stylesheet"
-    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <!-- Google Fonts -->
-    <link
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-            rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
     <!-- MDB -->
-    <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.css"
-            rel="stylesheet"
-    />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.css" rel="stylesheet" />
+    <title>Chat</title>
 </head>
-<body style="background: #282E33;">
-<div id="app">
-    <div class="container">
-        <div class="row setUsername" v-if="state == 0">
-            <div class="col-md-12">
-                <div class="card shadow bg-dark">
-                    <div class="card-body">
-                        <form @submit.prevent="setUsername">
-                            <h4 class="text-center card-title">Enter username ! <a @click="continueWithoutUsername"
-                                                                                   class="active">Join as a Guaest</a>
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <input type="text" placeholder="Username..." class="form-control rounded-0"
-                                           v-model:value="username">
+<style>
+    @media (max-width: 576px) {
+        .btn_send {
+            display: none;
+        }
+    }
+</style>
+
+<body>
+
+    <div id="app">
+        <div class="container">
+            <div class="col-lg-8 offset-lg-2">
+                <div class="" v-if="ready">
+                    <p v-for="item in info">{{ item.username }} {{ item.type }}</p>
+                </div>
+
+
+                <div class="mt-3" v-if="!ready">
+                    <form @submit.prevent="setUsername">
+                        <div class="row d-flex justify-content-center">
+                            <div class="col-lg-8 col-md-8 col-sm-8">
+                                <div class="form-group">
+                                    <input type="text" placeholder="введите имя пользователя .." class="form-control"
+                                        v-model="username">
                                 </div>
-                                <div class="col-md-4">
-                                    <button type="submit" class="btn btn-primary" style="background-color: #4c75a3;">
-                                        Join
-                                    </button>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-4 btn_send">
+                                <button type="submit" class="btn btn-secondary btn-block">войти <i
+                                        class="fa fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <h1 v-else>{{ username }}</h1>
+                <div class="card rounded-0" v-if="ready">
+                    <div class="card-header bg-secondary rounded-0 text-white">
+                        Мессенджер
+                    </div>
+                    <ul class="list-group list-group-light">
+                        <small v-if="typing" style="text-align: right; margin-right: 10px;"> {{ typing }} печатает
+                            ...</small>
+                        <li class="list-group-item px-3 list-group-small border-0" style="padding: 0 4px !important;"
+                            v-for="message in messages">
+                            <span
+                                :style="message.type === 0 ? 'float: right; margin-right: 10px' : 'margin-left: 10px'">{{
+                                message.message }}
+                                <small> : {{ message.by }}</small>
+                            </span>
+                        </li>
+                    </ul>
+                    <div class="card-body">
+                        <form @submit.prevent="send">
+                            <div class="row d-flex justify-content-center">
+                                <div class="col-lg-8 col-md-8 col-sm-8">
+                                    <div class="form-group">
+                                        <input type="text" placeholder="напишите сообщение .." class="form-control"
+                                            id="focus" v-model="msg">
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-4 btn_send">
+                                    <button type="submit" class="btn btn-secondary btn-block">послать <i
+                                            class="fa fa-arrow-right"></i></button>
                                 </div>
                             </div>
                         </form>
@@ -47,77 +83,90 @@
                 </div>
             </div>
         </div>
-        <div class="cont" v-if="state == 1">
-            <h1 class="text-center">
-                Socket chat
-            </h1>
-            <ul id="box">
-                <li v-for="message in messages">
-                    <span>
-                        <b> {{ message.user }} : </b> {{ message.message }}
-                    </span>
-                </li>
-            </ul>
-            <form @submit.prevent="sendMessage">
-                <div class="row">
-                    <div class="col-md-8">
-                        <input class="form-control rounded-0" id="focus" type="text" placeholder="Message..."
-                               v-model:value="message">
-                    </div>
-                    <div class="col-md-4">
-                        <input class="btn btn-primery btn-block" style="background-color: #4c75a3;" type="submit"
-                               value="Send">
-                    </div>
-
-                </div>
-            </form>
-        </div>
     </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<!-- MDB -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.js"
-></script>
-<script>
-    var socket = null;
-    var app = new Vue({
-        el: '#app',
-        data: {
-            message: '',
-            messages: [],
-            username: '',
-            state: 0
-        },
-        methods: {
-            sendMessage: function () {
-                if(this.message.length > 0) {
-                    socket.emit('message', this.message);
-                    this.message = '';
-                    document.getElementById('focus').focus()
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- MDB -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/4.0.0/mdb.min.js"></script>
+
+
+    <script>
+        var socket = io();
+        let app = new Vue({
+            el: "#app",
+            data: {
+                messages: [],
+                msg: "",
+                typing: false,
+                username: "",
+                ready: false,
+                info: []
+            },
+            watch: {
+                msg(value) {
+                    value ? socket.emit('typing', this.username) : socket.emit('stopTyping')
                 }
             },
-            setUsername: function () {
-                socket.emit('join', this.username);
-                this.username = '';
-                this.state = 1;
+            methods: {
+                send: function () {
+                    if (this.msg.length > 0) {
+                        this.messages.push({ message: this.msg, type: 0, by: 'me' })
+                        socket.emit('chat-message', { message: this.msg, user: this.username })
+                        this.msg = "";
+                        document.getElementById("focus").focus()
+                    }
+                    else {
+                        console.clear()
+                    }
+                },
+                setUsername: function () {
+                    this.ready = true
+                    socket.emit('joined', this.username)
+                }
+
             },
-            continueWithoutUsername: function () {
-                socket.emit('join', null);
-                this.state = 1;
-            }
-        },
-        created: function () {
-            socket = io();
-        },
-        mounted: function () {
-            socket.on('message', function (message) {
-                let voice = new SpeechSynthesisUtterance(message.message)
-                speechSynthesis.speak(voice)
-                app.messages.push(message)
-            })
-        }
-    })
-</script>
+            created: function () {
+                window.onbeforeunload = () => {
+                    socket.emit('leaved', this.username)
+                }
+
+                socket.emit('created', 'Abdulahad')
+                socket.on('created', (e) => {
+                    console.log(e);
+                });
+
+                socket.on('chat-message', (data) => {
+                    this.messages.push({ message: data.message, type: 1, by: data.user })
+                    let voice = new SpeechSynthesisUtterance(data.message)
+                    speechSynthesis.speak(voice)
+                })
+
+                socket.on('typing', (username) => {
+                    this.typing = username
+                })
+
+                socket.on('stopTyping', () => {
+                    this.typing = false
+                })
+
+                socket.on('joined', (data) => {
+                    this.info.push({ username: data, type: 'присоединился' })
+                    setTimeout(() => {
+                        this.info = []
+                    }, 3000);
+                })
+
+                socket.on('leaved', (data) => {
+                    this.info.push({ username: data, type: 'покинул' })
+                    setTimeout(() => {
+                        this.info = []
+                    }, 3000);
+                })
+            },
+        })
+    </script>
 </body>
+
 </html>
